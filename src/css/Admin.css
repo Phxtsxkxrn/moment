@@ -1,0 +1,41 @@
+/* Basic styling for Admin page */
+.admin-container {
+  padding: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.admin-title {
+  text-align: center;
+}
+.admin-form {
+  width: 100%;
+}
+.admin-field {
+  margin-bottom: 15px;
+}
+.admin-label {
+  display: block;
+  margin-bottom: 5px;
+}
+.admin-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+.admin-textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  min-height: 100px;
+}
+.admin-submit {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff4081;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+}

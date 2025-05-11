@@ -1,0 +1,39 @@
+[debug] [2025-05-11T15:29:42.945Z] ----------------------------------------------------------------------
+[debug] [2025-05-11T15:29:42.947Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Acer\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2025-05-11T15:29:42.948Z] CLI Version:   14.3.1
+[debug] [2025-05-11T15:29:42.948Z] Platform:      win32
+[debug] [2025-05-11T15:29:42.948Z] Node Version:  v22.11.0
+[debug] [2025-05-11T15:29:42.948Z] Time:          Sun May 11 2025 22:29:42 GMT+0700 (เวลาอินโดจีน)
+[debug] [2025-05-11T15:29:42.948Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-11T15:29:43.092Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-11T15:29:43.093Z] > authorizing via signed-in user (epsk.coin@gmail.com)
+[debug] [2025-05-11T15:29:43.093Z] [iam] checking project your-firebase-project-id for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-05-11T15:29:43.093Z] Checked if tokens are valid: false, expires at: 1746799860374
+[debug] [2025-05-11T15:29:43.094Z] Checked if tokens are valid: false, expires at: 1746799860374
+[debug] [2025-05-11T15:29:43.094Z] > refreshing access token with scopes: []
+[debug] [2025-05-11T15:29:43.095Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-05-11T15:29:43.095Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-11T15:29:43.398Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-05-11T15:29:43.398Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-11T15:29:43.404Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/your-firebase-project-id:testIamPermissions [none]
+[debug] [2025-05-11T15:29:43.404Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/your-firebase-project-id:testIamPermissions x-goog-quota-user=projects/your-firebase-project-id
+[debug] [2025-05-11T15:29:43.404Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/your-firebase-project-id:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-05-11T15:29:44.790Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/your-firebase-project-id:testIamPermissions 200
+[debug] [2025-05-11T15:29:44.790Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/your-firebase-project-id:testIamPermissions {}
+[debug] [2025-05-11T15:29:44.790Z] [iam] error while checking permissions, command may fail: Authorization failed. This account is missing the following required permissions on project your-firebase-project-id:
+
+  firebase.projects.get
+  firebasehosting.sites.update
+[debug] [2025-05-11T15:29:44.791Z] Checked if tokens are valid: true, expires at: 1746980982399
+[debug] [2025-05-11T15:29:44.791Z] Checked if tokens are valid: true, expires at: 1746980982399
+[debug] [2025-05-11T15:29:44.791Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/your-firebase-project-id [none]
+[debug] [2025-05-11T15:29:45.511Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/your-firebase-project-id 403
+[debug] [2025-05-11T15:29:45.511Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/your-firebase-project-id {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2025-05-11T15:29:45.513Z] Request to https://firebase.googleapis.com/v1beta1/projects/your-firebase-project-id had HTTP Error: 403, The caller does not have permission
+[debug] [2025-05-11T15:29:45.716Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/your-firebase-project-id had HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\Acer\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:52:12)
+    at RetryOperation._fn (C:\Users\Acer\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:312:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to get Firebase project your-firebase-project-id. Please make sure the project exists and your account has permission to access it.

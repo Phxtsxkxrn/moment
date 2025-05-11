@@ -1,0 +1,223 @@
+.birthday-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sparkles,
+.stars,
+.hearts,
+.confetti {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.sparkle,
+.star,
+.heart,
+.confetti-piece {
+  position: absolute;
+  transform-origin: center;
+}
+
+.sparkle {
+  width: 20px;
+  height: 20px;
+  background: #ff4081;
+  border-radius: 50%;
+  animation: sparkle 2.5s var(--delay) infinite;
+}
+
+.star {
+  width: 15px;
+  height: 15px;
+  background: #ffeb3b;
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  animation: spin 2s var(--delay) infinite;
+}
+
+.heart {
+  width: 15px;
+  height: 15px;
+  background: #e91e63;
+  transform: rotate(-45deg);
+  animation: float 3s var(--delay) infinite;
+}
+
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.heart::before {
+  top: -7.5px;
+}
+
+.heart::after {
+  left: 7.5px;
+}
+
+.confetti-piece {
+  width: 10px;
+  height: 30px;
+  animation: confetti 3s var(--delay) infinite;
+}
+
+.balloons {
+  position: absolute;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.balloon {
+  position: absolute;
+  width: 40px;
+  height: 50px;
+  border-radius: 50%;
+  transform: translateX(var(--x-offset));
+  animation: float 3s var(--delay) infinite;
+}
+
+.balloon:nth-child(5n + 1) {
+  background: #ff4081;
+}
+.balloon:nth-child(5n + 2) {
+  background: #4caf50;
+}
+.balloon:nth-child(5n + 3) {
+  background: #2196f3;
+}
+.balloon:nth-child(5n + 4) {
+  background: #ff9800;
+}
+.balloon:nth-child(5n + 5) {
+  background: #9c27b0;
+}
+
+.balloon::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 20px;
+  width: 2px;
+  height: 20px;
+  background: #ff4081;
+}
+
+.confetti-piece:nth-child(4n) {
+  background: #ff4081;
+}
+.confetti-piece:nth-child(4n + 1) {
+  background: #4caf50;
+}
+.confetti-piece:nth-child(4n + 2) {
+  background: #2196f3;
+}
+.confetti-piece:nth-child(4n + 3) {
+  background: #ff9800;
+}
+
+@keyframes sparkle {
+  0% {
+    transform: scale(0) rotate(var(--angle)) translateY(0);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1) rotate(var(--angle)) translateY(-50px);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8) rotate(var(--angle)) translateY(-100px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(1.2) rotate(var(--angle)) translateY(-150px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0) rotate(var(--angle)) translateY(-200px);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg) translateY(0) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: rotate(180deg) translateY(-100px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) translateY(-200px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) translateX(var(--x-offset));
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(60vh) translateX(calc(var(--x-offset) - 20px));
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(40vh) translateX(calc(var(--x-offset) + 20px));
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(20vh) translateX(calc(var(--x-offset) - 20px));
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(10vh) translateX(calc(var(--x-offset) + 20px));
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(var(--x-offset));
+    opacity: 0;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: rotate(var(--angle)) translateY(-200px);
+    opacity: 0;
+  }
+  50% {
+    transform: rotate(var(--angle)) translateY(50vh);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateY(100vh);
+    opacity: 0;
+  }
+}

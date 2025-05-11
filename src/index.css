@@ -1,13 +1,72 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+/* Calendar Styles */
+.react-calendar {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.has-content {
+  color: #ff4081;
+  font-size: 12px;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.react-calendar__tile {
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.react-calendar__tile--active {
+  background: #ff4081 !important;
+  color: white;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .react-calendar {
+    max-width: 100%;
+    padding: 5px;
+  }
+
+  .react-calendar__tile {
+    padding: 0.5em 0.2em;
+    font-size: 14px;
+  }
+
+  .has-content {
+    font-size: 10px;
+    bottom: 2px;
+  }
+
+  h1 {
+    font-size: 24px;
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
 }
