@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { db } from "../firebase/config";
+import "../css/Admin.css";
 import {
   collection,
   addDoc,
@@ -22,6 +23,11 @@ function Admin() {
   const [coordinates, setCoordinates] = useState({ lat: "", lng: "" });
   const [memoryType, setMemoryType] = useState("place"); // เพิ่ม state สำหรับประเภทความทรงจำ
   const [existingImages, setExistingImages] = useState([]); // เพิ่ม state สำหรับรูปที่มีอยู่แล้ว
+  const [activeTab, setActiveTab] = useState("add"); // เพิ่ม state สำหรับ tab
+  const [sortBy, setSortBy] = useState("date"); // date, title
+  const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
+  const [filterType, setFilterType] = useState("all");
+  const [searchText, setSearchText] = useState("");
 
   const memoryTypes = {
     place: "📍 สถานที่",
@@ -147,17 +153,23 @@ function Admin() {
   };
 
   const handleEdit = (moment) => {
+    // เพิ่มการเปลี่ยน tab ก่อนที่จะ set ค่าต่างๆ
+    setActiveTab("add");
+
     setTitle(moment.title);
     setDescription(moment.description);
-    // ใช้ rawDate ถ้ามี หรือแปลงจาก timestamp ถ้าไม่มี
     setDate(
       moment.rawDate || new Date(moment.date).toISOString().split("T")[0]
     );
     setLocation(moment.location || "");
     setCoordinates(moment.coordinates || { lat: "", lng: "" });
     setEditingId(moment.id);
-    setExistingImages(moment.imageUrls || []); // เก็บรูปเก่าไว้
-    setImages([]); // รีเซ็ตรูปใหม่
+    setMemoryType(moment.memoryType || "place"); // เพิ่มการ set memoryType
+    setExistingImages(moment.imageUrls || []);
+    setImages([]);
+
+    // เลื่อนหน้าไปที่ด้านบน
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
@@ -196,317 +208,343 @@ function Admin() {
     setExistingImages(items);
   };
 
-  return (
-    <div style={{ padding: "15px", maxWidth: "600px", margin: "0 auto" }}>
-      <h1 style={{ textAlign: "center" }}>
-        {editingId ? "แก้ไขความทรงจำ" : "เพิ่มความทรงจำ"}
-      </h1>
-      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            หัวข้อ:
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            รายละเอียด:
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-              minHeight: "100px",
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            วันที่:
-          </label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: "15px" }}>
-          {/* แสดงรูปที่มีอยู่แล้ว */}
-          {existingImages.length > 0 && (
-            <div>
-              <label style={{ display: "block", marginBottom: "5px" }}>
-                รูปภาพที่มีอยู่: (ลากเพื่อจัดลำดับ)
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                  marginBottom: "10px",
-                }}
-              >
-                {existingImages.map((url, index) => (
-                  <div
-                    key={url}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                    style={{ position: "relative" }}
-                  >
-                    <img
-                      src={url}
-                      alt={`Existing ${index + 1}`}
-                      style={{
-                        width: "100px",
-                        height: "100px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
-                        cursor: "move",
-                      }}
-                    />
-                    <button
-                      onClick={() => handleRemoveExistingImage(index)}
-                      style={{
-                        position: "absolute",
-                        top: -8,
-                        right: -8,
-                        background: "#ff4081",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "20px",
-                        height: "20px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+  // เพิ่มฟังก์ชันย้ายรูปภาพ
+  const moveImage = (index, direction) => {
+    const newImages = [...existingImages];
+    if (direction === "left" && index > 0) {
+      [newImages[index], newImages[index - 1]] = [
+        newImages[index - 1],
+        newImages[index],
+      ];
+      setExistingImages(newImages);
+    } else if (direction === "right" && index < newImages.length - 1) {
+      [newImages[index], newImages[index + 1]] = [
+        newImages[index + 1],
+        newImages[index],
+      ];
+      setExistingImages(newImages);
+    }
+  };
 
-          {/* ฟอร์มอัพโหลดรูปใหม่ */}
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            เพิ่มรูปภาพใหม่:
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple // เพิ่ม multiple attribute
-            onChange={(e) => setImages(Array.from(e.target.files))}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-            }}
-          />
-          {images.length > 0 && (
-            <small style={{ color: "#666" }}>
-              เลือก {images.length} รูปใหม่
-            </small>
-          )}
-        </div>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            ประเภทความทรงจำ:
-          </label>
-          <select
-            value={memoryType}
-            onChange={(e) => setMemoryType(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-            }}
-          >
-            {Object.entries(memoryTypes).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {memoryType === "place" && (
-          <>
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>
-                สถานที่:
-              </label>
+  // เพิ่มฟังก์ชัน sort และ filter
+  const getFilteredAndSortedMoments = () => {
+    let filtered = [...momentsList];
+
+    // Filter by type
+    if (filterType !== "all") {
+      filtered = filtered.filter((moment) => moment.memoryType === filterType);
+    }
+
+    // Filter by search text
+    if (searchText) {
+      filtered = filtered.filter(
+        (moment) =>
+          moment.title.toLowerCase().includes(searchText.toLowerCase()) ||
+          moment.description.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === "date") {
+        return sortOrder === "desc" ? b.date - a.date : a.date - b.date;
+      }
+      // Sort by title
+      return sortOrder === "desc"
+        ? b.title.localeCompare(a.title)
+        : a.title.localeCompare(b.title);
+    });
+
+    return filtered;
+  };
+
+  return (
+    <div className="admin-form-wrapper">
+      <div className="tab-container">
+        <TabButton
+          active={activeTab === "add"}
+          onClick={() => setActiveTab("add")}
+          icon="➕"
+          text="เพิ่มความทรงจำ"
+        />
+        <TabButton
+          active={activeTab === "list"}
+          onClick={() => setActiveTab("list")}
+          icon="📝"
+          text="รายการทั้งหมด"
+        />
+        <TabButton
+          active={activeTab === "calendar"}
+          onClick={() => setActiveTab("calendar")}
+          icon="📅"
+          text="ปฏิทิน"
+        />
+      </div>
+
+      {activeTab === "add" && (
+        <div>
+          <h2 className="admin-title">
+            {editingId ? "แก้ไขความทรงจำ" : "เพิ่มความทรงจำใหม่"}
+          </h2>
+          <form onSubmit={handleSubmit} className="admin-form">
+            <div className="form-section">
+              <label className="form-label">หัวข้อ:</label>
               <input
                 type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="ชื่อสถานที่ เช่น ร้านอาหาร"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                }}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="form-input"
               />
             </div>
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>
-                พิกัด (ละติจูด, ลองจิจูด):
-              </label>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <input
-                  type="number"
-                  value={coordinates.lat}
-                  onChange={(e) =>
-                    setCoordinates({ ...coordinates, lat: e.target.value })
-                  }
-                  placeholder="ละติจูด"
-                  style={{
-                    width: "50%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ddd",
-                  }}
-                />
-                <input
-                  type="number"
-                  value={coordinates.lng}
-                  onChange={(e) =>
-                    setCoordinates({ ...coordinates, lng: e.target.value })
-                  }
-                  placeholder="ลองจิจูด"
-                  style={{
-                    width: "50%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ddd",
-                  }}
-                />
-              </div>
+            <div className="form-section">
+              <label className="form-label">รายละเอียด:</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="form-input"
+              />
             </div>
-          </>
-        )}
-        <button
-          type="submit"
-          disabled={uploading}
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#ff4081",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "16px",
-            opacity: uploading ? 0.7 : 1,
-          }}
-        >
-          {uploading ? "กำลังอัพโหลด..." : editingId ? "อัพเดท" : "บันทึก"}
-        </button>
-      </form>
+            <div className="form-section">
+              <label className="form-label">วันที่:</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="form-input"
+              />
+            </div>
+            <div className="form-section">
+              {/* แสดงรูปที่มีอยู่แล้ว */}
+              {existingImages.length > 0 && (
+                <div>
+                  <label className="form-label">
+                    รูปภาพที่มีอยู่: (ลากเพื่อจัดลำดับ)
+                  </label>
+                  <div className="existing-images-container">
+                    {existingImages.map((url, index) => (
+                      <div
+                        key={url}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        className="existing-image-wrapper"
+                      >
+                        <img
+                          src={url}
+                          alt={`Existing ${index + 1}`}
+                          className="existing-image"
+                        />
+                        <button
+                          onClick={() => handleRemoveExistingImage(index)}
+                          className="remove-image-button"
+                        >
+                          ×
+                        </button>
+                        <div className="image-actions">
+                          <button
+                            className="move-button"
+                            onClick={() => moveImage(index, "left")}
+                            disabled={index === 0}
+                          >
+                            ←
+                          </button>
+                          <button
+                            className="move-button"
+                            onClick={() => moveImage(index, "right")}
+                            disabled={index === existingImages.length - 1}
+                          >
+                            →
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-      <hr style={{ margin: "30px 0" }} />
-
-      <h2 style={{ textAlign: "center" }}>รายการความทรงจำทั้งหมด</h2>
-      {momentsList.length > 0 ? (
-        momentsList.map((moment) => (
-          <div
-            key={moment.id}
-            style={{
-              marginBottom: "15px",
-              padding: "12px",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              margin: "10px 0",
-            }}
-          >
-            <h3>{moment.title}</h3>
-            {moment.imageUrls && moment.imageUrls.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  overflowX: "auto",
-                  padding: "10px 0",
-                }}
+              {/* ฟอร์มอัพโหลดรูปใหม่ */}
+              <label className="form-label">เพิ่มรูปภาพใหม่:</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple // เพิ่ม multiple attribute
+                onChange={(e) => setImages(Array.from(e.target.files))}
+                className="form-input"
+              />
+              {images.length > 0 && (
+                <small className="image-count">
+                  เลือก {images.length} รูปใหม่
+                </small>
+              )}
+            </div>
+            <div className="form-section">
+              <label className="form-label">ประเภทความทรงจำ:</label>
+              <select
+                value={memoryType}
+                onChange={(e) => setMemoryType(e.target.value)}
+                className="form-input"
               >
-                {moment.imageUrls.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`${moment.title} ${index + 1}`}
-                    style={{
-                      width: "200px",
-                      height: "200px",
-                      objectFit: "cover",
-                      borderRadius: "4px",
-                      flexShrink: 0,
-                    }}
-                  />
+                {Object.entries(memoryTypes).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
-              </div>
-            )}
-            <p>{moment.description}</p>
-            <small>{new Date(moment.date).toLocaleDateString("th-TH")}</small>
-            <div style={{ marginTop: "10px" }}>
-              <button
-                onClick={() => handleEdit(moment)}
-                style={{
-                  marginRight: "10px",
-                  padding: "6px 10px",
-                  backgroundColor: "#4CAF50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                }}
-              >
-                แก้ไข
-              </button>
-              <button
-                onClick={() => handleDelete(moment.id)}
-                style={{
-                  padding: "6px 10px",
-                  backgroundColor: "#f44336",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                }}
-              >
-                ลบ
-              </button>
+              </select>
             </div>
+            {memoryType === "place" && (
+              <>
+                <div className="form-section">
+                  <label className="form-label">สถานที่:</label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="ชื่อสถานที่ เช่น ร้านอาหาร"
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-section">
+                  <label className="form-label">
+                    พิกัด (ละติจูด, ลองจิจูด):
+                  </label>
+                  <div className="coordinates-container">
+                    <input
+                      type="number"
+                      value={coordinates.lat}
+                      onChange={(e) =>
+                        setCoordinates({ ...coordinates, lat: e.target.value })
+                      }
+                      placeholder="ละติจูด"
+                      className="form-input"
+                    />
+                    <input
+                      type="number"
+                      value={coordinates.lng}
+                      onChange={(e) =>
+                        setCoordinates({ ...coordinates, lng: e.target.value })
+                      }
+                      placeholder="ลองจิจูด"
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            <button
+              type="submit"
+              disabled={uploading}
+              className="submit-button"
+            >
+              {uploading ? "กำลังอัพโหลด..." : editingId ? "อัพเดท" : "บันทึก"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {activeTab === "list" && (
+        <div>
+          <h2 className="admin-title">รายการความทรงจำทั้งหมด</h2>
+
+          <div className="search-container">
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="🔍 ค้นหา..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="search-input"
+            />
+
+            {/* Filter */}
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">🏷️ ทั้งหมด</option>
+              {Object.entries(memoryTypes).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            {/* Sort */}
+            <select
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split("-");
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+              className="sort-select"
+            >
+              <option value="date-desc">📅 วันที่ล่าสุด</option>
+              <option value="date-asc">📅 วันที่เก่าสุด</option>
+              <option value="title-asc">📝 ชื่อ A-Z</option>
+              <option value="title-desc">📝 ชื่อ Z-A</option>
+            </select>
           </div>
-        ))
-      ) : (
-        <p style={{ textAlign: "center" }}>ไม่มีข้อมูล</p>
+
+          {getFilteredAndSortedMoments().length > 0 ? (
+            getFilteredAndSortedMoments().map((moment) => (
+              <div key={moment.id} className="moment-list-item">
+                <h3>{moment.title}</h3>
+                {moment.imageUrls && moment.imageUrls.length > 0 && (
+                  <div className="image-list-container">
+                    {moment.imageUrls.map((url, index) => (
+                      <img
+                        key={index}
+                        src={url}
+                        alt={`${moment.title} ${index + 1}`}
+                        className="image-list-item"
+                      />
+                    ))}
+                  </div>
+                )}
+                <p>{moment.description}</p>
+                <small>
+                  {new Date(moment.date).toLocaleDateString("th-TH")}
+                </small>
+                <div className="button-container">
+                  <button
+                    onClick={() => handleEdit(moment)}
+                    className="edit-button"
+                  >
+                    แก้ไข
+                  </button>
+                  <button
+                    onClick={() => handleDelete(moment.id)}
+                    className="delete-button"
+                  >
+                    ลบ
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p style={{ textAlign: "center" }}>ไม่พบข้อมูล</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === "calendar" && (
+        <div>
+          <h2 className="admin-title">ปฏิทินความทรงจำ</h2>
+          {/* Calendar component จะเพิ่มในอนาคต */}
+        </div>
       )}
     </div>
   );
 }
+
+// Component สำหรับปุ่ม Tab
+const TabButton = ({ active, onClick, icon, text }) => (
+  <button onClick={onClick} className={`tab-button ${active ? "active" : ""}`}>
+    <span>{icon}</span>
+    <span>{text}</span>
+  </button>
+);
 
 export default Admin;
