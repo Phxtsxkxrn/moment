@@ -23,11 +23,45 @@ function Admin() {
   const [coordinates, setCoordinates] = useState({ lat: "", lng: "" });
   const [memoryType, setMemoryType] = useState("place"); // เพิ่ม state สำหรับประเภทความทรงจำ
   const [existingImages, setExistingImages] = useState([]); // เพิ่ม state สำหรับรูปที่มีอยู่แล้ว
-  const [activeTab, setActiveTab] = useState("add"); // เพิ่ม state สำหรับ tab
-  const [sortBy, setSortBy] = useState("date"); // date, title
-  const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
-  const [filterType, setFilterType] = useState("all");
+  const [activeTab, setActiveTab] = useState("add"); // เปลี่ยนเป็น "add", "list", "grid"
+  const [gridPositions, setGridPositions] = useState({
+    grid1: {
+      memoryId: "",
+      position: 1,
+      showDuration: false, // แสดงครบรอบกี่ปีกี่เดือน
+      showNextAnnual: false, // แสดงอีกกี่วันครบรอบปี
+      showNextMonth: false, // แสดงอีกกี่วันครบรอบเดือน
+      alertText: "", // เพิ่ม alertText
+    },
+    grid2: {
+      memoryId: "",
+      position: 2,
+      showDuration: false,
+      showNextAnnual: false,
+      showNextMonth: false,
+      alertText: "",
+    },
+    grid3: {
+      memoryId: "",
+      position: 3,
+      showDuration: false,
+      showNextAnnual: false,
+      showNextMonth: false,
+      alertText: "",
+    },
+    grid4: {
+      memoryId: "",
+      position: 4,
+      showDuration: false,
+      showNextAnnual: false,
+      showNextMonth: false,
+      alertText: "",
+    },
+  });
   const [searchText, setSearchText] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const memoryTypes = {
     place: "📍 สถานที่",
@@ -47,6 +81,30 @@ function Admin() {
 
   useEffect(() => {
     fetchMoments();
+  }, []);
+
+  // เพิ่มฟังก์ชันโหลด grid settings
+  const fetchGridSettings = async () => {
+    const gridDoc = await getDocs(collection(db, "gridSettings"));
+    if (!gridDoc.empty) {
+      const data = gridDoc.docs[0].data();
+      // เรียงลำดับ grid ก่อนเซ็ตค่า
+      const orderedData = Object.keys(data)
+        .sort((a, b) => {
+          const numA = parseInt(a.replace("grid", ""));
+          const numB = parseInt(b.replace("grid", ""));
+          return numA - numB;
+        })
+        .reduce((obj, key) => {
+          obj[key] = data[key];
+          return obj;
+        }, {});
+      setGridPositions(orderedData);
+    }
+  };
+
+  useEffect(() => {
+    fetchGridSettings();
   }, []);
 
   const uploadImages = async (files) => {
@@ -258,6 +316,115 @@ function Admin() {
     return filtered;
   };
 
+  // เพิ่มฟังก์ชันบันทึก grid settings
+  const saveGridSettings = async () => {
+    try {
+      const gridRef = collection(db, "gridSettings");
+      const gridDocs = await getDocs(gridRef);
+
+      if (!gridDocs.empty) {
+        // อัพเดต document ที่มีอยู่
+        await updateDoc(
+          doc(db, "gridSettings", gridDocs.docs[0].id),
+          gridPositions
+        );
+      } else {
+        // สร้าง document ใหม่
+        await addDoc(gridRef, gridPositions);
+      }
+      alert("บันทึกการตั้งค่า Grid สำเร็จ");
+    } catch (error) {
+      console.error("Error saving grid settings:", error);
+      alert("เกิดข้อผิดพลาดในการบันทึก");
+    }
+  };
+
+  // เพิ่มฟังก์ชันบันทึก grid เดี่ยว
+  const saveGridSetting = async (gridKey) => {
+    try {
+      const gridRef = collection(db, "gridSettings");
+      const gridDocs = await getDocs(gridRef);
+
+      if (!gridDocs.empty) {
+        const existingData = gridDocs.docs[0].data();
+        await updateDoc(doc(db, "gridSettings", gridDocs.docs[0].id), {
+          ...existingData,
+          [gridKey]: gridPositions[gridKey],
+        });
+      } else {
+        await addDoc(gridRef, {
+          [gridKey]: gridPositions[gridKey],
+        });
+      }
+      alert(`บันทึกการตั้งค่า Grid ${gridKey.slice(-1)} สำเร็จ`);
+    } catch (error) {
+      console.error("Error saving grid setting:", error);
+      alert("เกิดข้อผิดพลาดในการบันทึก");
+    }
+  };
+
+  // เพิ่มฟังก์ชันรีเซ็ต grid
+  const resetGridSetting = (gridKey) => {
+    if (
+      window.confirm(
+        `คุณต้องการรีเซ็ตการตั้งค่า Grid ${gridKey.slice(-1)} หรือไม่?`
+      )
+    ) {
+      setGridPositions({
+        ...gridPositions,
+        [gridKey]: {
+          memoryId: "",
+          position: parseInt(gridKey.slice(-1)),
+          showDuration: false,
+          showNextAnnual: false,
+          showNextMonth: false,
+          alertText: "",
+        },
+      });
+    }
+  };
+
+  // เพิ่มฟังก์ชันคำนวณข้อมูล preview
+  const getPreviewData = (moment, settings) => {
+    if (!moment) return null;
+
+    const now = new Date();
+    const date = new Date(moment.date);
+
+    // คำนวณระยะเวลา
+    let years = now.getFullYear() - date.getFullYear();
+    let months = now.getMonth() - date.getMonth();
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    // คำนวณวันครบรอบปี
+    const nextAnnual = new Date(date);
+    nextAnnual.setFullYear(now.getFullYear());
+    if (nextAnnual < now) {
+      nextAnnual.setFullYear(now.getFullYear() + 1);
+    }
+    const daysToAnnual = Math.ceil((nextAnnual - now) / (1000 * 60 * 60 * 24));
+
+    // คำนวณวันครบรอบเดือน
+    const nextMonthly = new Date(date);
+    nextMonthly.setMonth(now.getMonth());
+    nextMonthly.setFullYear(now.getFullYear());
+    if (nextMonthly < now) {
+      nextMonthly.setMonth(now.getMonth() + 1);
+    }
+    const daysToMonthly = Math.ceil(
+      (nextMonthly - now) / (1000 * 60 * 60 * 24)
+    );
+
+    return {
+      duration: { years, months },
+      daysToAnnual,
+      daysToMonthly,
+    };
+  };
+
   return (
     <div className="admin-form-wrapper">
       <div className="tab-container">
@@ -274,10 +441,10 @@ function Admin() {
           text="รายการทั้งหมด"
         />
         <TabButton
-          active={activeTab === "calendar"}
-          onClick={() => setActiveTab("calendar")}
-          icon="📅"
-          text="ปฏิทิน"
+          active={activeTab === "grid"}
+          onClick={() => setActiveTab("grid")}
+          icon="📱"
+          text="จัดการ Grid"
         />
       </div>
 
@@ -529,10 +696,223 @@ function Admin() {
         </div>
       )}
 
-      {activeTab === "calendar" && (
+      {/* เพิ่ม Grid Management Tab */}
+      {activeTab === "grid" && (
         <div>
-          <h2 className="admin-title">ปฏิทินความทรงจำ</h2>
-          {/* Calendar component จะเพิ่มในอนาคต */}
+          <h2 className="admin-title">จัดการ Grid</h2>
+          <div className="grid-management">
+            {Object.keys(gridPositions)
+              .sort((a, b) => parseInt(a.slice(-1)) - parseInt(b.slice(-1)))
+              .map((gridKey) => {
+                const selectedMoment = momentsList.find(
+                  (m) => m.id === gridPositions[gridKey].memoryId
+                );
+
+                return (
+                  <div key={gridKey} className="grid-item-setting">
+                    <div className="grid-header">
+                      <h3>Grid {gridKey.slice(-1)}</h3>
+                    </div>
+
+                    <div className="grid-content">
+                      <div className="grid-main-settings">
+                        <label className="form-label">เลือกความทรงจำ:</label>
+                        <select
+                          value={gridPositions[gridKey].memoryId}
+                          onChange={(e) => {
+                            setGridPositions({
+                              ...gridPositions,
+                              [gridKey]: {
+                                ...gridPositions[gridKey],
+                                memoryId: e.target.value,
+                              },
+                            });
+                          }}
+                          className="form-input"
+                        >
+                          <option value="">-- เลือกความทรงจำ --</option>
+                          {momentsList.map((moment) => (
+                            <option key={moment.id} value={moment.id}>
+                              {moment.title}
+                            </option>
+                          ))}
+                        </select>
+
+                        {selectedMoment && (
+                          <div className="grid-preview">
+                            <h4>ตัวอย่าง:</h4>
+                            <div className="preview-card">
+                              <div className="preview-content">
+                                <span className="preview-type">
+                                  {memoryTypes[selectedMoment.memoryType]}
+                                </span>
+                                <h5>{selectedMoment.title}</h5>
+                                <p>
+                                  {new Date(
+                                    selectedMoment.date
+                                  ).toLocaleDateString("th-TH")}
+                                </p>
+
+                                {gridPositions[gridKey].showDuration && (
+                                  <div className="preview-duration">
+                                    {getPreviewData(
+                                      selectedMoment,
+                                      gridPositions[gridKey]
+                                    ).duration.years > 0 &&
+                                      `${
+                                        getPreviewData(
+                                          selectedMoment,
+                                          gridPositions[gridKey]
+                                        ).duration.years
+                                      } ปี `}
+                                    {getPreviewData(
+                                      selectedMoment,
+                                      gridPositions[gridKey]
+                                    ).duration.months > 0 &&
+                                      `${
+                                        getPreviewData(
+                                          selectedMoment,
+                                          gridPositions[gridKey]
+                                        ).duration.months
+                                      } เดือน`}
+                                  </div>
+                                )}
+
+                                {gridPositions[gridKey].showNextMonth && (
+                                  <div className="preview-monthly">
+                                    อีก{" "}
+                                    {
+                                      getPreviewData(
+                                        selectedMoment,
+                                        gridPositions[gridKey]
+                                      ).daysToMonthly
+                                    }{" "}
+                                    วัน จะครบรอบเดือน
+                                  </div>
+                                )}
+
+                                {gridPositions[gridKey].showNextAnnual && (
+                                  <div className="preview-annual">
+                                    อีก{" "}
+                                    {
+                                      getPreviewData(
+                                        selectedMoment,
+                                        gridPositions[gridKey]
+                                      ).daysToAnnual
+                                    }{" "}
+                                    วัน จะครบรอบปี
+                                  </div>
+                                )}
+                              </div>
+                              {gridPositions[gridKey].alertText && (
+                                <div className="preview-alert">
+                                  {gridPositions[gridKey].alertText}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid-options">
+                        <div className="options-group">
+                          <h4>การแสดงผล:</h4>
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={gridPositions[gridKey].showDuration}
+                              onChange={(e) => {
+                                setGridPositions({
+                                  ...gridPositions,
+                                  [gridKey]: {
+                                    ...gridPositions[gridKey],
+                                    showDuration: e.target.checked,
+                                  },
+                                });
+                              }}
+                            />
+                            แสดงครบรอบกี่ปีกี่เดือน
+                          </label>
+
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={gridPositions[gridKey].showNextAnnual}
+                              onChange={(e) => {
+                                setGridPositions({
+                                  ...gridPositions,
+                                  [gridKey]: {
+                                    ...gridPositions[gridKey],
+                                    showNextAnnual: e.target.checked,
+                                  },
+                                });
+                              }}
+                            />
+                            แสดงอีกกี่วันครบรอบปี
+                          </label>
+
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={gridPositions[gridKey].showNextMonth}
+                              onChange={(e) => {
+                                setGridPositions({
+                                  ...gridPositions,
+                                  [gridKey]: {
+                                    ...gridPositions[gridKey],
+                                    showNextMonth: e.target.checked,
+                                  },
+                                });
+                              }}
+                            />
+                            แสดงอีกกี่วันครบรอบเดือน
+                          </label>
+                        </div>
+
+                        <div className="options-group">
+                          <h4>การแจ้งเตือน:</h4>
+                          <div className="alert-input-container">
+                            <input
+                              type="text"
+                              value={gridPositions[gridKey].alertText}
+                              onChange={(e) => {
+                                setGridPositions({
+                                  ...gridPositions,
+                                  [gridKey]: {
+                                    ...gridPositions[gridKey],
+                                    alertText: e.target.value,
+                                  },
+                                });
+                              }}
+                              placeholder="ใส่ข้อความที่จะแสดงในแจ้งเตือน (ถ้ามี)"
+                              className="form-input"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid-actions">
+                          <button
+                            onClick={() => resetGridSetting(gridKey)}
+                            className="reset-grid-button"
+                            title="รีเซ็ตการตั้งค่า"
+                          >
+                            🔄
+                          </button>
+                          <button
+                            onClick={() => saveGridSetting(gridKey)}
+                            className="save-grid-button"
+                          >
+                            💾 บันทึก Grid {gridKey.slice(-1)}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            <button onClick={saveGridSettings} className="submit-button">
+              บันทึกการตั้งค่า Grid ทั้งหมด
+            </button>
+          </div>
         </div>
       )}
     </div>

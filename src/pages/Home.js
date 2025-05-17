@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { db } from "../firebase/config";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../css/Home.css"; // เพิ่มการนำเข้า CSS สำหรับสไตล์ของหน้า Home
@@ -9,6 +16,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Swal from "sweetalert2";
 import BirthdayAnimation from "../components/BirthdayAnimation";
+import { calculateNextAnnual, calculateNextMonthly } from "../utils/dateUtils"; // ลบ calculateDuration ออกเพราะเราใช้ calculateDuration ที่อยู่ใน component
 
 // แก้ไขไอคอน marker ของ Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -33,6 +41,8 @@ function Home() {
   const touchEnd = useRef(null);
   const [showBirthdayAnimation, setShowBirthdayAnimation] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [gridSettings, setGridSettings] = useState(null);
+  const [gridMoments, setGridMoments] = useState({});
 
   const handleSwipe = (direction) => {
     if (transitioning) return;
@@ -313,39 +323,60 @@ function Home() {
     return result;
   }, [allMoments]);
 
-  const dateCards = {
-    birthdayEarth: { emoji: "🎂", title: "วันเกิดเอิร์ธ" },
-    birthdayDow: { emoji: "🎂", title: "วันเกิดดาว" },
-    anniversary: { emoji: "💑", title: "วันครบรอบ" },
-    firstMeet: { emoji: "💫", title: "วันที่เจอกัน" },
-  };
+  // ลบตัวแปรที่ไม่ได้ใช้ออก:
+  // const dateCards = { ... }
+  // const handleShowDowImages = () => { ... }
+  // const handleShowAnniversaryImages = () => { ... }
 
-  const handleShowDowImages = () => {
-    setShowBirthdayAnimation(true);
-    const dowImages = allMoments
-      .filter((moment) => moment.memoryType === "birthdayDow")
-      .flatMap((moment) => moment.imageUrls || []);
+  // เพิ่มฟังก์ชันโหลด grid settings
+  const fetchGridSettings = async () => {
+    const gridDoc = await getDocs(collection(db, "gridSettings"));
+    if (!gridDoc.empty) {
+      const settings = gridDoc.docs[0].data();
+      setGridSettings(settings);
 
-    if (dowImages.length > 0) {
-      setSelectedImages(dowImages);
-      setModalType("birthdayDow");
-      setCurrentIndex(0);
-      setShowModal(true);
+      // ดึงข้อมูล moments สำหรับแต่ละ grid
+      const momentsData = {};
+      for (const [gridKey, gridData] of Object.entries(settings)) {
+        if (gridData.memoryId) {
+          const momentDoc = await getDoc(doc(db, "moments", gridData.memoryId));
+          if (momentDoc.exists()) {
+            momentsData[gridKey] = { id: momentDoc.id, ...momentDoc.data() };
+          }
+        }
+      }
+      setGridMoments(momentsData);
     }
   };
 
-  const handleShowAnniversaryImages = () => {
-    setShowBirthdayAnimation(true);
-    const anniversaryImages = allMoments
-      .filter((moment) => moment.memoryType === "anniversary")
-      .flatMap((moment) => moment.imageUrls || []);
+  useEffect(() => {
+    fetchGridSettings();
+  }, []);
 
-    if (anniversaryImages.length > 0) {
-      setSelectedImages(anniversaryImages);
-      setModalType("anniversary"); // เพิ่มการตั้งค่า modalType
-      setCurrentIndex(0);
-      setShowModal(true);
+  // เพิ่มฟังก์ชันสำหรับเรียง grid
+  const getOrderedGridItems = () => {
+    if (!gridSettings) return [];
+    return Object.entries(gridSettings).sort(([keyA], [keyB]) => {
+      // เรียงตาม grid number (grid1, grid2, grid3, grid4)
+      const numA = parseInt(keyA.replace("grid", ""));
+      const numB = parseInt(keyB.replace("grid", ""));
+      return numA - numB;
+    });
+  };
+
+  const handleGridClick = (moment) => {
+    if (!moment.imageUrls || moment.imageUrls.length === 0) return;
+
+    setSelectedImages(moment.imageUrls);
+    setModalType(moment.memoryType);
+    setCurrentIndex(0);
+
+    // เพิ่มแอนิเมชันสำหรับ birthdayDow
+    if (moment.memoryType === "birthdayDow") {
+      setShowBirthdayAnimation(true);
     }
+
+    setShowModal(true);
   };
 
   return (
@@ -402,59 +433,67 @@ function Home() {
       <h1 className="home-title">💞 Earth & Daw 💓</h1>
 
       <div className="important-dates-grid">
-        {Object.entries(dateCards).map(([type, info]) => (
-          <div
-            key={type}
-            className="date-card"
-            onClick={() => {
-              if (type === "birthdayDow") handleShowDowImages();
-              if (type === "anniversary") handleShowAnniversaryImages();
-            }}
-            style={{
-              cursor:
-                type === "birthdayDow" || type === "anniversary"
-                  ? "pointer"
-                  : "default",
-              transition: "transform 0.2s",
-            }}
-          >
-            {(type === "birthdayDow" || type === "anniversary") && (
-              <div className="alert-badge">
-                {type === "birthdayDow"
-                  ? "คลิกอันนี้เร็วววว!"
-                  : "ดูภาพความรัก! 💕"}
+        {gridSettings &&
+          getOrderedGridItems().map(([gridKey, gridData]) => {
+            const moment = gridMoments[gridKey];
+            if (!moment) return null;
+
+            const duration = calculateDuration(moment.date);
+            const daysToAnnual = calculateNextAnnual(moment.date);
+            const daysToMonthly = calculateNextMonthly(moment.date);
+
+            return (
+              <div
+                key={gridKey}
+                className="date-card"
+                onClick={() => handleGridClick(moment)}
+                style={{ cursor: "pointer" }}
+              >
+                {gridData.alertText && (
+                  <div className="alert-badge">{gridData.alertText}</div>
+                )}
+                <div className="emoji">
+                  {moment.memoryType === "place"
+                    ? "📍"
+                    : moment.memoryType === "birthdayEarth"
+                    ? "🎂"
+                    : moment.memoryType === "birthdayDow"
+                    ? "🎂"
+                    : moment.memoryType === "anniversary"
+                    ? "💑"
+                    : moment.memoryType === "firstMeet"
+                    ? "💫"
+                    : "💝"}
+                </div>
+                <h3 className="title">{moment.title}</h3>
+                <p className="date">
+                  {new Date(moment.date).toLocaleDateString("th-TH")}
+                </p>
+
+                {gridData.showDuration && (
+                  <p className="duration">
+                    {duration.years > 0 && `${duration.years} ปี `}
+                    {duration.months > 0 && `${duration.months} เดือน`}
+                    {duration.years === 0 &&
+                      duration.months === 0 &&
+                      "น้อยกว่า 1 เดือน"}
+                  </p>
+                )}
+
+                {gridData.showNextMonth && (
+                  <p className="monthly-countdown">
+                    อีก {daysToMonthly} วัน จะครบรอบเดือน
+                  </p>
+                )}
+
+                {gridData.showNextAnnual && (
+                  <p className="annual-countdown">
+                    อีก {daysToAnnual} วัน จะครบรอบปี
+                  </p>
+                )}
               </div>
-            )}
-            <div className="emoji">{info.emoji}</div>
-            <p className="title">{info.title}</p>
-            <div className="date">
-              {getImportantDates[type]?.date || "ยังไม่ได้บันทึก"}
-            </div>
-            {getImportantDates[type]?.duration && (
-              <div className="duration">
-                {getImportantDates[type].duration.years > 0 &&
-                  `${getImportantDates[type].duration.years} ปี `}
-                {getImportantDates[type].duration.months} เดือน
-              </div>
-            )}
-            {getImportantDates[type]?.countdown && type === "anniversary" && (
-              <div className="countdown">
-                อีก {getImportantDates[type].countdown} วัน
-                <br />
-                <small>ถึงครบรอบเดือนถัดไป</small>
-              </div>
-            )}
-            {getImportantDates[type]?.annualCountdown && (
-              <div className="annual-countdown">
-                อีก {getImportantDates[type].annualCountdown.days} วัน
-                <br />
-                <small>
-                  ถึงครบรอบปีที่ {getImportantDates[type].annualCountdown.year}
-                </small>
-              </div>
-            )}
-          </div>
-        ))}
+            );
+          })}
       </div>
 
       <div className="map-container">

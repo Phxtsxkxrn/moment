@@ -100,17 +100,24 @@
   gap: 15px;
   margin: 20px 0;
   padding: 0 10px;
-  width: calc(100% - 20px); /* ทำให้เท่ากับ map container */
+  width: calc(100% - 20px);
+  grid-auto-flow: row; /* เพิ่มบรรทัดนี้เพื่อให้เรียงจากซ้ายไปขวา */
 }
 
 .date-card {
-  position: relative; /* Add this */
+  position: relative;
   background: white;
-  padding: 15px;
+  padding: 20px 15px; /* เพิ่ม padding ด้านบนล่าง */
   border-radius: 8px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .date-card .emoji {
@@ -141,7 +148,7 @@
 .date-card .duration {
   font-size: 13px;
   color: #9c27b0;
-  margin: 5px 0;
+  margin-top: 6px; /* เพิ่ม margin-top ให้แยกจากข้อความด้านบนชัดเจนขึ้น */
   font-weight: 500;
 }
 
@@ -388,4 +395,30 @@ body.modal-open {
   text-align: center;
   color: #666;
   font-size: 14px;
+}
+
+.monthly-countdown,
+.annual-countdown,
+.duration {
+  padding: 3px 0;
+  margin: 4px 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.monthly-countdown {
+  font-size: 12px;
+  color: #2196f3;
+}
+
+.annual-countdown {
+  font-size: 12px;
+  color: #ff9800;
+}
+
+.duration {
+  font-size: 13px;
+  color: #9c27b0;
+  margin-top: 6px; /* เพิ่ม margin-top ให้แยกจากข้อความด้านบนชัดเจนขึ้น */
+  font-weight: 500;
 }
