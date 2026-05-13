@@ -202,7 +202,8 @@
 /* Modal and overlay containment */
 .modal-overlay {
   position: fixed;
-  z-index: var(--z-modal-bg);
+  inset: 0;
+  z-index: 9999;
 }
 
 .modal {
