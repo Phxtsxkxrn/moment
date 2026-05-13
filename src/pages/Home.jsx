@@ -1,16 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { db } from "../firebase/config";
-import {
-  collection,
-  query,
-  orderBy,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "../css/Home.css"; // เพิ่มการนำเข้า CSS สำหรับสไตล์ของหน้า Home
+import "../css/Home.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -19,7 +10,9 @@ import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import Swal from "sweetalert2";
 import BirthdayAnimation from "../components/BirthdayAnimation";
-import { calculateNextAnnual, calculateNextMonthly } from "../utils/dateUtils"; // ลบ calculateDuration ออกเพราะเราใช้ calculateDuration ที่อยู่ใน component
+import { calculateNextAnnual, calculateNextMonthly } from "../utils/dateUtils";
+import { fetchAllMomentsData } from "../services/firestore/memoriesService";
+import { getGridSettingsWithMoments } from "../services/firestore/gridService";
 
 // แก้ไขไอคอน marker ของ Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -115,12 +108,7 @@ function Home() {
 
   useEffect(() => {
     const fetchMoments = async () => {
-      const q = query(collection(db, "moments"), orderBy("date", "desc"));
-      const querySnapshot = await getDocs(q);
-      const momentsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const momentsData = await fetchAllMomentsData();
       setAllMoments(momentsData);
 
       // กรองข้อมูลของวันปัจจุบัน
@@ -333,23 +321,9 @@ function Home() {
 
   // เพิ่มฟังก์ชันโหลด grid settings
   const fetchGridSettings = async () => {
-    const gridDoc = await getDocs(collection(db, "gridSettings"));
-    if (!gridDoc.empty) {
-      const settings = gridDoc.docs[0].data();
-      setGridSettings(settings);
-
-      // ดึงข้อมูล moments สำหรับแต่ละ grid
-      const momentsData = {};
-      for (const [gridKey, gridData] of Object.entries(settings)) {
-        if (gridData.memoryId) {
-          const momentDoc = await getDoc(doc(db, "moments", gridData.memoryId));
-          if (momentDoc.exists()) {
-            momentsData[gridKey] = { id: momentDoc.id, ...momentDoc.data() };
-          }
-        }
-      }
-      setGridMoments(momentsData);
-    }
+    const { settings, moments } = await getGridSettingsWithMoments();
+    setGridSettings(settings);
+    setGridMoments(moments);
   };
 
   useEffect(() => {
