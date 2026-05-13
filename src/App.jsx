@@ -1,18 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Admin from "./pages/Admin";
-import Home from "./pages/Home";
+import AppShell from "./components/layout/AppShell";
 
 function App() {
-  return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </div>
-    </Router>
-  );
+  return <AppShell />;
 }
 
 export default App;
