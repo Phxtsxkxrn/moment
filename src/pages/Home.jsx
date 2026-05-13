@@ -11,8 +11,8 @@ import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import Swal from "sweetalert2";
 import BirthdayAnimation from "../components/BirthdayAnimation";
 import { calculateNextAnnual, calculateNextMonthly } from "../utils/dateUtils";
-import { fetchAllMomentsData } from "../services/firestore/memoriesService";
-import { getGridSettingsWithMoments } from "../services/firestore/gridService";
+import { useMoments } from "../hooks/useMoments";
+import { useGridMoments } from "../hooks/useGridMoments";
 
 // แก้ไขไอคอน marker ของ Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -23,22 +23,23 @@ L.Icon.Default.mergeOptions({
 });
 
 function Home() {
-  const [moments, setMoments] = useState([]);
-  const [allMoments, setAllMoments] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date()); // เปลี่ยนค่าเริ่มต้นเป็นวันปัจจุบัน
-  const defaultCenter = [13.7563, 100.5018]; // กรุงเทพฯ
+  // Data hooks
+  const { moments: allMoments } = useMoments();
+  const { gridSettings, gridMoments } = useGridMoments();
 
-  // เพิ่ม states
+  // UI state
+  const [moments, setMoments] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const defaultCenter = [13.7563, 100.5018];
+
   const [showModal, setShowModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0); // Add this state
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
   const touchStart = useRef(null);
   const touchEnd = useRef(null);
   const [showBirthdayAnimation, setShowBirthdayAnimation] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [gridSettings, setGridSettings] = useState(null);
-  const [gridMoments, setGridMoments] = useState({});
 
   const handleSwipe = (direction) => {
     if (transitioning) return;
@@ -107,21 +108,7 @@ function Home() {
   };
 
   useEffect(() => {
-    const fetchMoments = async () => {
-      const momentsData = await fetchAllMomentsData();
-      setAllMoments(momentsData);
-
-      // กรองข้อมูลของวันปัจจุบัน
-      const today = new Date();
-      const startOfDay = new Date(today.setHours(0, 0, 0, 0)).getTime();
-      const endOfDay = new Date(today.setHours(23, 59, 59, 999)).getTime();
-
-      const todayMoments = momentsData.filter(
-        (moment) => moment.date >= startOfDay && moment.date <= endOfDay
-      );
-      setMoments(todayMoments);
-    };
-
+    // Show welcome alert once on mount
     const showWelcomeAlert = async () => {
       await Swal.fire({
         title: "Are you ready?",
@@ -137,8 +124,19 @@ function Home() {
     };
 
     showWelcomeAlert();
-    fetchMoments();
   }, []);
+
+  // Filter today's moments when allMoments updates
+  useEffect(() => {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).getTime();
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).getTime();
+
+    const todayMoments = allMoments.filter(
+      (moment) => moment.date >= startOfDay && moment.date <= endOfDay
+    );
+    setMoments(todayMoments);
+  }, [allMoments]);
 
   // เพิ่ม effect สำหรับจัดการ body scroll
   useEffect(() => {
@@ -318,17 +316,6 @@ function Home() {
   // const dateCards = { ... }
   // const handleShowDowImages = () => { ... }
   // const handleShowAnniversaryImages = () => { ... }
-
-  // เพิ่มฟังก์ชันโหลด grid settings
-  const fetchGridSettings = async () => {
-    const { settings, moments } = await getGridSettingsWithMoments();
-    setGridSettings(settings);
-    setGridMoments(moments);
-  };
-
-  useEffect(() => {
-    fetchGridSettings();
-  }, []);
 
   // เพิ่มฟังก์ชันสำหรับเรียง grid
   const getOrderedGridItems = () => {
