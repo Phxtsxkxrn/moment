@@ -1,325 +1,355 @@
-/* Basic styling for Home page */
+/* Home page - Production-grade styling */
+
 .home-container {
-  padding: 10px;
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding: var(--space-xl) 0;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .home-title {
   text-align: center;
-  font-size: 2em;
-  margin-bottom: 20px;
-  color: #ff4081;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  color: var(--color-primary);
+  animation: fadeIn 0.5s ease-out;
 }
 
-.home-calendar-container {
-  margin-bottom: 20px;
-  padding: 0 10px;
-}
-
-.home-moment-card {
-  margin-bottom: 15px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 10px;
-}
-
-.home-moment-card img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-/* Calendar dots style */
-.has-content {
-  color: #ff4081;
-  font-size: 12px;
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Map container styles */
-.map-container {
-  width: calc(100% - 20px); /* ลบ padding ซ้าย-ขวา */
-  margin: 0 10px 20px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.leaflet-container {
-  width: 100%;
-  height: 300px; /* ลดความสูงลง */
-  border-radius: 8px;
-}
-
-.leaflet-control-container .leaflet-left {
-  z-index: 999 !important;
-}
-
-.leaflet-popup {
-  z-index: 1000 !important;
-}
-
-.leaflet-popup-content-wrapper {
-  z-index: 1000 !important;
-}
-
-.leaflet-popup-tip-container {
-  z-index: 1000 !important;
-}
-
-.leaflet-control-attribution {
-  z-index: 100 !important;
-}
-
-.leaflet-bottom {
-  z-index: 100 !important;
-}
-
-.location-info {
-  margin-top: 10px;
-  margin-bottom: 5px;
-}
-
-.location-info a:hover {
-  text-decoration: underline;
-}
-
+/* Important Dates Grid Section */
 .important-dates-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin: 20px 0;
-  padding: 0 10px;
-  width: calc(100% - 20px);
-  grid-auto-flow: row; /* เพิ่มบรรทัดนี้เพื่อให้เรียงจากซ้ายไปขวา */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-lg);
+  padding: 0;
+  width: 100%;
 }
 
 .date-card {
   position: relative;
-  background: white;
-  padding: 20px 15px; /* เพิ่ม padding ด้านบนล่าง */
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--color-surface);
+  padding: var(--space-lg);
+  border-radius: var(--radius-base);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all var(--transition-default);
+  animation: slideUp 0.4s ease-out;
 }
 
 .date-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  border-color: rgba(255, 89, 112, 0.2);
 }
 
 .date-card .emoji {
-  font-size: 24px;
-  margin-bottom: 5px;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: var(--space-md);
 }
 
 .date-card .title {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  margin: 0 0 var(--space-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .date-card .date {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 5px 0;
-  color: #ff4081;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin: var(--space-sm) 0;
+  color: var(--color-primary);
 }
 
-.date-card .countdown {
-  font-size: 12px;
-  color: #4caf50;
-  margin-top: 5px;
-  font-weight: 500;
+.date-card .duration,
+.date-card .countdown,
+.date-card .monthly-countdown,
+.date-card .annual-countdown {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin: var(--space-xs) 0;
+  line-height: 1.5;
 }
 
 .date-card .duration {
-  font-size: 13px;
-  color: #9c27b0;
-  margin-top: 6px; /* เพิ่ม margin-top ให้แยกจากข้อความด้านบนชัดเจนขึ้น */
-  font-weight: 500;
+  color: var(--color-secondary);
+}
+
+.date-card .monthly-countdown {
+  color: #3b82f6;
 }
 
 .date-card .annual-countdown {
-  font-size: 12px;
-  color: #ff9800;
-  margin-top: 5px;
-  font-weight: 500;
-}
-
-.date-card small {
-  font-size: 11px;
-  opacity: 0.8;
+  color: #f59e0b;
 }
 
 .alert-badge {
   position: absolute;
-  top: -8px;
-  left: -8px;
-  background-color: #ff4081;
+  top: -12px;
+  right: -12px;
+  background: var(--color-primary);
   color: white;
-  padding: 5px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  animation: bounce 1s infinite;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 4px 12px rgba(255, 89, 112, 0.3);
+  animation: bounce 2s infinite;
 }
 
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
+/* Calendar Section */
+.home-calendar-container {
+  margin-bottom: 0;
+  padding: 0;
+  width: 100%;
 }
 
-.image-gallery {
+.react-calendar {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: var(--color-surface);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: var(--radius-base);
+  padding: var(--space-lg);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.react-calendar__tile {
+  position: relative;
+  padding: var(--space-md);
+  transition: all var(--transition-default);
+}
+
+.react-calendar__tile:hover {
+  background: rgba(255, 89, 112, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+.react-calendar__tile--active {
+  background: var(--color-primary) !important;
+  color: white;
+  border-radius: var(--radius-sm);
+}
+
+.has-content {
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Map Container */
+.map-container {
+  width: 100%;
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  animation: slideUp 0.5s ease-out 0.1s backwards;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 400px;
+  border-radius: var(--radius-base);
+}
+
+/* Leaflet z-index management */
+.leaflet-control-container .leaflet-left {
+  z-index: 50 !important;
+}
+
+.leaflet-popup {
+  z-index: 600 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  z-index: 600 !important;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+}
+
+.leaflet-popup-tip-container {
+  z-index: 600 !important;
+}
+
+.leaflet-control-attribution {
+  z-index: 10 !important;
+}
+
+.leaflet-bottom {
+  z-index: 10 !important;
+}
+
+/* Location Info */
+.location-info {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(229, 231, 235, 0.9);
+}
+
+.location-info p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.location-info a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-default);
+}
+
+.location-info a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* Moments Feed Section */
+.home-moments-list {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 10px 0;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+.home-moment-card {
+  background: var(--color-surface);
+  padding: var(--space-lg);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: var(--radius-base);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  transition: all var(--transition-default);
+  animation: slideUp 0.4s ease-out;
+}
+
+.home-moment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.home-moment-card h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-md);
+  color: var(--color-text);
+}
+
+.home-moment-card p {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--space-md);
+}
+
+.home-moment-card small {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Image Gallery */
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  width: 100%;
 }
 
 .image-gallery img {
-  width: 200px;
+  width: 100%;
   height: 200px;
   object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-  transition: transform 0.2s;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-default);
+  cursor: pointer;
 }
 
 .image-gallery img:hover {
   transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
 }
 
-/* Custom scrollbar */
-.image-gallery::-webkit-scrollbar {
-  height: 6px;
-}
-
-.image-gallery::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.image-gallery::-webkit-scrollbar-thumb {
-  background: #ff4081;
-  border-radius: 3px;
-}
-
+/* Modal Styles */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  overflow: hidden;
-}
-
-body.modal-open {
-  overflow: hidden;
-  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 80%;
+  background: var(--color-surface);
+  padding: var(--space-2xl);
+  border-radius: var(--radius-base);
+  max-width: 90%;
   max-height: 90vh;
-  width: 800px;
+  width: 100%;
+  max-width: 700px;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+  animation: slideUp 0.3s ease-out;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-2xl);
+  gap: var(--space-lg);
 }
 
 .modal-header h3 {
-  font-family: "Segoe UI", sans-serif;
-  font-size: 42px;
-  font-weight: 800;
-  text-align: center;
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
   margin: 0;
-  padding: 10px 0;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  animation: bounce 1s infinite;
+  color: var(--color-primary);
 }
 
 .modal-header h3 span {
-  background: linear-gradient(45deg, #ff69b4, #ffb6c1);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2);
-}
-
-.modal-image-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  padding: 10px;
-}
-
-.modal-image-grid img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px;
-  transition: transform 0.2s;
-}
-
-.modal-image-grid img:hover {
-  transform: scale(1.05);
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
+  background: transparent;
+  border: 0;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-secondary);
+  padding: var(--space-sm);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-default);
+  flex-shrink: 0;
 }
 
 .close-button:hover {
-  color: #000;
+  background: rgba(209, 213, 219, 0.1);
+  color: var(--color-text);
 }
 
+/* Photo Viewer */
 .photo-viewer {
   position: relative;
   width: 100%;
-  max-width: 400px;
-  height: 60vh;
-  margin: 20px auto;
+  max-width: 600px;
+  height: 600px;
+  margin: 0 auto;
   perspective: 1000px;
-  touch-action: pan-y pinch-zoom;
 }
 
 .photo-stack {
@@ -339,8 +369,8 @@ body.modal-open {
   top: 50%;
   transform: translate(-50%, -50%);
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -349,76 +379,149 @@ body.modal-open {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   pointer-events: none;
 }
 
 .stack-item.current {
-  transform: translate(-50%, -50%) rotate(0);
+  transform: translate(-50%, -50%) rotate(0) scale(1);
   z-index: 3;
 }
 
 .stack-item.next-1 {
-  transform: translate(-53%, -53%) rotate(-3deg);
+  transform: translate(-53%, -53%) rotate(-3deg) scale(0.95);
   z-index: 2;
   filter: brightness(0.9);
 }
 
 .stack-item.next-2 {
-  transform: translate(-47%, -53%) rotate(3deg);
+  transform: translate(-47%, -53%) rotate(3deg) scale(0.9);
   z-index: 1;
   filter: brightness(0.8);
 }
 
 .stack-item.exit-left {
-  transform: translate(-150%, -50%) rotate(-20deg);
+  transform: translate(-150%, -50%) rotate(-20deg) scale(0.8);
   opacity: 0;
 }
 
 .stack-item.exit-right {
-  transform: translate(50%, -50%) rotate(20deg);
+  transform: translate(50%, -50%) rotate(20deg) scale(0.8);
   opacity: 0;
-}
-
-.stack-item.enter-right {
-  transform: translateX(200%) rotate(20deg);
-}
-
-.stack-item.enter-left {
-  transform: translateX(-200%) rotate(-20deg);
 }
 
 .photo-counter {
   position: absolute;
-  bottom: -30px; /* เปลี่ยนจาก top เป็น bottom */
+  bottom: -50px;
   width: 100%;
   text-align: center;
-  color: #666;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
 }
 
-.monthly-countdown,
-.annual-countdown,
-.duration {
-  padding: 3px 0;
-  margin: 4px 0;
-  font-weight: 500;
-  line-height: 1.4;
+/* Empty State */
+.home-empty-state {
+  text-align: center;
+  padding: var(--space-3xl) var(--space-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
 }
 
-.monthly-countdown {
-  font-size: 12px;
-  color: #2196f3;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.annual-countdown {
-  font-size: 12px;
-  color: #ff9800;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.duration {
-  font-size: 13px;
-  color: #9c27b0;
-  margin-top: 6px; /* เพิ่ม margin-top ให้แยกจากข้อความด้านบนชัดเจนขึ้น */
-  font-weight: 500;
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .home-container {
+    gap: var(--space-xl);
+    padding: var(--space-lg) 0;
+  }
+
+  .home-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .important-dates-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .date-card {
+    padding: var(--space-md);
+  }
+
+  .date-card .emoji {
+    font-size: 2rem;
+  }
+
+  .date-card .title {
+    font-size: var(--font-size-sm);
+  }
+
+  .date-card .date {
+    font-size: var(--font-size-md);
+  }
+
+  .leaflet-container {
+    height: 300px;
+  }
+
+  .modal-content {
+    padding: var(--space-lg);
+    max-width: 95%;
+  }
+
+  .modal-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .photo-viewer {
+    height: 450px;
+  }
+
+  .image-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .important-dates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-viewer {
+    height: 400px;
+  }
+
+  .modal-content {
+    max-width: 100%;
+  }
 }

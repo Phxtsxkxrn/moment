@@ -10,6 +10,7 @@ import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import Swal from "sweetalert2";
 import BirthdayAnimation from "../components/BirthdayAnimation";
+import Modal from "../components/common/Modal";
 import { calculateNextAnnual, calculateNextMonthly } from "../utils/dateUtils";
 import { useMoments } from "../hooks/useMoments";
 import { useGridMoments } from "../hooks/useGridMoments";
@@ -349,49 +350,43 @@ function Home() {
         <BirthdayAnimation onComplete={() => setShowBirthdayAnimation(false)} />
       )}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>
-                <span>
-                  {modalType === "anniversary" ? "Story 💕" : "Daw Day"}
-                </span>{" "}
-                💫
-                <div
-                  style={{
-                    fontSize: "14px",
-                    color: "#ff4081",
-                    marginTop: "5px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {modalType === "anniversary"
-                    ? `${getImportantDates["anniversary"]?.duration.years} Y ${getImportantDates["anniversary"]?.duration.months} M`
-                    : modalType === "birthdayDow"
-                    ? `${getImportantDates["birthdayDow"]?.date} | ${getImportantDates["birthdayDow"]?.duration.years}Y`
-                    : ""}
-                </div>
-              </h3>
-              <button
-                className="close-button"
-                onClick={() => setShowModal(false)}
+        <Modal
+          title={
+            <>
+              <span>
+                {modalType === "anniversary" ? "Story 💕" : "Daw Day"}
+              </span>{" "}
+              💫
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "#ff4081",
+                  marginTop: "5px",
+                  fontWeight: "bold",
+                }}
               >
-                ×
-              </button>
-            </div>
-            <div
-              className="photo-viewer"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <div className="photo-counter">
-                {currentIndex + 1} / {selectedImages.length}
+                {modalType === "anniversary"
+                  ? `${getImportantDates["anniversary"]?.duration.years} Y ${getImportantDates["anniversary"]?.duration.months} M`
+                  : modalType === "birthdayDow"
+                  ? `${getImportantDates["birthdayDow"]?.date} | ${getImportantDates["birthdayDow"]?.duration.years}Y`
+                  : ""}
               </div>
-              <div className="photo-stack">{getStackItems()}</div>
+            </>
+          }
+          onClose={() => setShowModal(false)}
+        >
+          <div
+            className="photo-viewer"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="photo-counter">
+              {currentIndex + 1} / {selectedImages.length}
             </div>
+            <div className="photo-stack">{getStackItems()}</div>
           </div>
-        </div>
+        </Modal>
       )}
 
       <h1 className="home-title">💞 Earth & Daw 💓</h1>

@@ -229,8 +229,9 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   padding: var(--space-lg);
@@ -239,13 +240,13 @@
 }
 
 .modal {
-  width: min(100%, 600px);
+  width: min(100%, 700px);
   background: var(--color-surface);
   border-radius: var(--radius-base);
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
   overflow: hidden;
   animation: slideUp 0.3s ease-out;
-  max-height: 90vh;
+  max-height: 95vh;
   display: flex;
   flex-direction: column;
 }
@@ -378,6 +379,40 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Modal responsive styles */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: var(--space-md);
+  }
+
+  .modal {
+    width: 100%;
+    max-height: 95vh;
+  }
+
+  .modal__header,
+  .modal__body,
+  .modal__footer {
+    padding: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: var(--space-sm);
+  }
+
+  .modal {
+    max-height: 98vh;
+  }
+
+  .modal__header,
+  .modal__body,
+  .modal__footer {
+    padding: var(--space-sm);
   }
 }
 
